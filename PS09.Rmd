@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 09"
-author: "WRITE YOUR NAME(S) HERE"
+author: "Kiryu Kawahata"
 date: "2017-11-07"
 output:
   html_document:
@@ -36,6 +36,52 @@ observations_1 <- read_csv("data/observations_1.csv")
 observations_2 <- read_csv("data/observations_2.csv")
 
 # Set observations to be one of two datasets
+observations <- observations_1
+
+# Fit model for k=2
+k <- 2
+k_means_results <- kmeans(observations, centers=k)
+clusters <- k_means_results$cluster
+cluster_centers <- k_means_results$centers
+
+# Add cluster results to observations. Note we convert to factor since cluster
+# ID's should be treated as categorical
+observations$cluster <- as.factor(clusters)
+
+# Add cluster ID's to cluster_centers
+cluster_centers <- cluster_centers %>% 
+  as_tibble() %>% 
+  mutate(cluster=as.factor(1:k))
+
+ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=observations) +
+  geom_point(data=cluster_centers, size=5)
+
+  
+
+table(observations$cluster)
+```
+**Questions**:
+
+1. Run KMC 10 times on `observations_1` and comment on the consistency of the
+results.
+1. Speculate on the root cause of any consistency or inconsistency in the
+results.
+1. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
+results.
+1. Speculate on the root cause of any consistency or inconsistency in the
+results.
+
+
+
+**Answers**:
+
+1. In 'observations_1' the clusters formed from clustering constantly changes from one result to the next. There is consistency in that every time KMC is run there are two clearly distinct/separated clusters produced in the plot. The amount of points contained in each cluster aren't shared equally, nor are they split by a specific amount/ratio each time. The split does seem to consistently be around 55:45 however. 
+
+1. I believe the inconsistency of the cluster points are caused because there are different ways to create partitions of the observations. Each time KMC is run, the clusters are roughly half of the observations. This can be observed in the plots where the clusters are split either around x1 = 1 or x2 = 1, or sometimes even diagonally. The observations themselves don't appear to have enough inherently to create dissimilar groups. The cluster centers are therefore placed in different ways that roughly split the observations in half for each cluster. 
+
+```{r}
+# Set observations to be one of two datasets
 observations <- observations_2
 
 # Fit model for k=2
@@ -56,25 +102,15 @@ cluster_centers <- cluster_centers %>%
 ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
   geom_point(data=observations) +
   geom_point(data=cluster_centers, size=5)
+
+  
+
+table(observations$cluster)
 ```
 
-**Questions**:
+1. In contrast to the clusters in the first observation, the clusters in 'observations_2' are consistent every time KMC is run. Each run results in the same cluster centers, and the clusters each share half of the total observations. 
 
-1. Run KMC 10 times on `observations_1` and comment on the consistency of the
-results.
-1. Speculate on the root cause of any consistency or inconsistency in the
-results.
-1. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
-results.
-1. Speculate on the root cause of any consistency or inconsistency in the
-results.
-
-**Answers**:
-
-1.
-1.
-1.
-1.
+1. The observed points in 'observations_2' are organized such that cluster dissimilarities can be easily made. One cluster contains only low values of both x1 and x2 (< 1) while the other consists of only high values of x1 and x2 (> 1). This distinction creates clusters with the same points consistently, which would also mean the clusters will be centered around the same point each time. 
 
 
 
@@ -98,4 +134,5 @@ B <- data_frame(
 distance_matrix <- proxy::dist(x=A, y=B)
 distance_matrix
 apply(distance_matrix, 1, which.min)
+
 ```
